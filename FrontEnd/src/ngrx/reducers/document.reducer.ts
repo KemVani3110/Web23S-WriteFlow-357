@@ -6,6 +6,7 @@ import { DocumentState } from "../states/document.state";
 let initialState: DocumentState = {
   documents: [],
   document: null,
+  users: [],
   loading: false,
   inProcess: false,
   error: ''
@@ -138,22 +139,17 @@ export const DocumentReducer = createReducer(
     }
   })),
   on(DocumentActions.updateSuccess, ((state, { doc, updateField, updateValue }) => {
-
     let documents = [...state.documents!]
-    let tempDocuments: DocModel[] = []
-
-    documents.forEach((document: any) => {
-      if (updateField == 'isPublic' || updateField == 'isDelete') return;
-      if (document.id !== doc.id) tempDocuments.push(document);
-
-      let tempDoc = { ...document };
-      tempDoc[updateField] = updateValue;
-      tempDocuments.push(tempDoc);
-    });
-
+    if (updateField == 'isPublic' || updateField == 'isDelete') {
+      let index = documents.findIndex(x => x.id == doc.id);
+      documents.splice(index, 1);
+    } else {
+      let index = documents.findIndex(x => x.id == doc.id);
+      documents[index] = doc;
+    }
     return {
       ...state,
-      documents: tempDocuments,
+      documents: documents,
       inProcess: false
     }
   })),
@@ -184,6 +180,29 @@ export const DocumentReducer = createReducer(
       ...state,
       document: null,
       loading: false,
+      error: error
+    }
+  })),
+  on(DocumentActions.getUserInDoc, ((state) => {
+    return {
+      ...state,
+      users: null,
+      inProcess: true,
+      error: '',
+    }
+  })),
+  on(DocumentActions.getUserInDocSuccess, ((state, { users }) => {
+    return {
+      ...state,
+      users: users,
+      inProcess: false,
+    }
+  })),
+  on(DocumentActions.getUserInDocFail, ((state, { error }) => {
+    return {
+      ...state,
+      users: null,
+      inProcess: false,
       error: error
     }
   })),

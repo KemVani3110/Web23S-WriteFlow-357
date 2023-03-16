@@ -1,10 +1,9 @@
 import { LoginpopupComponent } from '../../components/loginpopup/loginpopup.component';
-import { Component, Input } from '@angular/core';
+import { Component, HostListener, Input, ViewChild } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { AuthService } from 'src/app/services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { lastValueFrom } from 'rxjs';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -15,8 +14,6 @@ import { UserService } from 'src/app/services/user/user.service';
 export class NavbarComponent {
   isTop = true;
 
-  @Input() photoURL = '';
-
   constructor(
     private authService: AuthService,
     public dialog: MatDialog,
@@ -24,10 +21,12 @@ export class NavbarComponent {
     private userService: UserService
   ) { }
 
+
   user$ = this.authService.user$;
   user: User | null = null;
   userPhoto: string | '' = '';
   isLoading = true;
+  innerWidth: number = window.innerWidth;
 
   ngOnInit(): void {
     window.addEventListener('scroll', () => {
@@ -54,7 +53,9 @@ export class NavbarComponent {
     this.authService.isLoading$.subscribe(isLoading => {
       this.isLoading = isLoading;
     });
+  }
 
+  ngAfterViewInit() {
     this.updatePhotoURL();
   }
 
@@ -87,5 +88,10 @@ export class NavbarComponent {
 
   navigateToHome() {
     this.router.navigate(['/']);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.innerWidth = window.innerWidth;
   }
 }
